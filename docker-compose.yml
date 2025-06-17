@@ -1,0 +1,32 @@
+services:
+  app:
+    image: alexkirsanov/devops-for-programmers-project-74
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: blog-test
+    working_dir: /app
+    environment:
+      - NODE_ENV=test
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_PORT=${DATABASE_PORT}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: make test
+
+  db:
+    image: postgres:17.5
+    restart: always
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
